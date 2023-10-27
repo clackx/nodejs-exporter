@@ -7,6 +7,13 @@
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
+    },
+    {
+      "name": "VAR_INSTANCE",
+      "type": "constant",
+      "label": "instance",
+      "value": "localhost:9200",
+      "description": ""
     }
   ],
   "__elements": {},
@@ -21,7 +28,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.1.2"
+      "version": "10.1.5"
     },
     {
       "type": "panel",
@@ -92,18 +99,19 @@
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
-            "axisPlacement": "auto",
+            "axisPlacement": "left",
+            "axisWidth": -1,
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 31,
-            "gradientMode": "hue",
+            "fillOpacity": 41,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -138,7 +146,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 17,
         "x": 0,
         "y": 1
       },
@@ -146,7 +154,9 @@
       "options": {
         "legend": {
           "calcs": [
+            "min",
             "mean",
+            "max",
             "lastNotNull"
           ],
           "displayMode": "table",
@@ -158,6 +168,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -165,7 +176,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "sum by (type) (irate(node_cpu_ticks[$__rate_interval]))/1000",
+          "expr": "sum by (type) (irate(node_cpu_ticks{instance=\"$instance\"}[$__rate_interval]))/1000",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -173,6 +184,12 @@
         }
       ],
       "title": "CPU usage",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {}
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -209,8 +226,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 7,
+        "x": 17,
         "y": 1
       },
       "id": 15,
@@ -230,7 +247,7 @@
           "valueSize": 29
         }
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -238,7 +255,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "rate(node_cpu_ticks{type=\"user\"}[$__rate_interval])/10",
+          "expr": "rate(node_cpu_ticks{instance=\"$instance\",type=\"user\"}[$__rate_interval])/10",
           "instant": false,
           "legendFormat": "CPU {{cpu}}",
           "range": true,
@@ -335,7 +352,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "memory_summary {__name__=\"memory_summary\", instance=\"localhost:9200\", job=\"prometheus\", type=\"swapTotal\"}"
+                  "memory_summary {__name__=\"memory_summary\", instance=\"$instance\", job=\"prometheus\", type=\"swapTotal\"}"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -383,7 +400,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_summary{type=~\"(?i)^(mem).+$\"}/1024/1024",
+          "expr": "memory_summary{instance=\"$instance\", type=~\"(?i)^(mem).+$\"}/1024/1024",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -452,7 +469,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -460,7 +477,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_summary{type=~\"(?i)^(mem).+$\"}/1024/1024",
+          "expr": "memory_summary{instance=\"$instance\", type=~\"(?i)^(mem).+$\"}/1024/1024",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -529,7 +546,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -537,7 +554,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_summary{type=~\"(?i)^(mem).+$\"}/1024/1024",
+          "expr": "memory_summary{instance=\"$instance\", type=~\"(?i)^(mem).+$\"}/1024/1024",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -606,12 +623,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 7,
         "w": 2,
         "x": 15,
         "y": 10
       },
-      "id": 22,
+      "id": 23,
       "options": {
         "legend": {
           "calcs": [],
@@ -631,14 +648,14 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_usage{name=\"qbittorrent\",type=\"Pss\"}/1024/1024",
+          "expr": "memory_usage{instance=\"$instance\", type=\"Pss\"}/1024",
           "instant": false,
           "legendFormat": "{{name}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "qbittor ram",
+      "title": "ff use ram",
       "type": "timeseries"
     },
     {
@@ -715,7 +732,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "memory_summary {__name__=\"memory_summary\", instance=\"localhost:9200\", job=\"prometheus\", type=\"swapTotal\"}"
+                  "memory_summary {__name__=\"memory_summary\", instance=\"$instance\", job=\"prometheus\", type=\"swapTotal\"}"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -760,7 +777,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_summary{type=~\"(?i)^(swap).+$\"}/1024/1024",
+          "expr": "memory_summary{instance=\"$instance\", type=~\"(?i)^(swap).+$\"}/1024/1024",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -829,7 +846,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -837,7 +854,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_summary{type=~\"(?i)^(swap).+$\"}/1024/1024",
+          "expr": "memory_summary{instance=\"$instance\", type=~\"(?i)^(swap).+$\"}/1024/1024",
           "instant": false,
           "legendFormat": "{{type}}",
           "range": true,
@@ -846,100 +863,6 @@
       ],
       "title": "Swap free",
       "type": "gauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-LOCAL}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 2,
-        "x": 15,
-        "y": 14
-      },
-      "id": 23,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-LOCAL}"
-          },
-          "editorMode": "code",
-          "expr": "memory_usage{name=\"firefox\",type=\"Pss\"}/1024/1024",
-          "instant": false,
-          "legendFormat": "{{name}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "ff use ram",
-      "type": "timeseries"
     },
     {
       "datasource": {
@@ -999,7 +922,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_usage{type=\"Pss\"}/1024",
+          "expr": "memory_usage{instance=\"$instance\", instance=\"$instance\",type=\"Pss\"}/1024",
           "instant": false,
           "legendFormat": "{{name}}",
           "range": true,
@@ -1067,7 +990,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_usage{type=\"Rss\"}/1024",
+          "expr": "memory_usage{instance=\"$instance\", type=\"Rss\"}/1024",
           "instant": false,
           "legendFormat": "{{name}}",
           "range": true,
@@ -1135,7 +1058,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_usage{type=\"SwapPss\"}/1024",
+          "expr": "memory_usage{instance=\"$instance\", type=\"SwapPss\"}/1024",
           "instant": false,
           "legendFormat": "{{name}}",
           "range": true,
@@ -1204,10 +1127,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 7,
         "w": 2,
         "x": 15,
-        "y": 19
+        "y": 17
       },
       "id": 24,
       "options": {
@@ -1229,7 +1152,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "memory_usage{name=\"firefox\",type=\"SwapPss\"}/1024/1024",
+          "expr": "memory_usage{instance=\"$instance\", type=\"SwapPss\"}/1024",
           "instant": false,
           "legendFormat": "{{name}}",
           "range": true,
@@ -1345,7 +1268,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "sum by (iface) (rate(network_io_total{type=~\"inputEror|inputDropped\", iface=~\"^(w).+\"}[$__rate_interval])*3)",
+          "expr": "sum by (iface) (rate(network_io_total{instance=\"$instance\", type=~\"inputEror|inputDropped\", iface!=\"lo\"}[$__rate_interval]))",
           "instant": false,
           "legendFormat": "RX {{iface}}",
           "range": true,
@@ -1357,7 +1280,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "- sum by (iface) (rate(network_io_total{type=~\"outputEror|outputDropped\",  iface=~\"^(w).+\"}[$__rate_interval]))",
+          "expr": "- sum by (iface) (rate(network_io_total{instance=\"$instance\", type=~\"outputEror|outputDropped\", iface!=\"lo\"}[$__rate_interval]))",
           "hide": false,
           "instant": false,
           "legendFormat": "TX {{iface}}",
@@ -1460,9 +1383,9 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "irate(network_io_total{iface!=\"lo\",type=\"inputBytes\"}[$__rate_interval])/1024",
+          "expr": "irate(network_io_total{instance=\"$instance\", iface!=\"lo\", type=\"inputBytes\"}[$__rate_interval])/1024",
           "instant": false,
-          "legendFormat": "recv {{iface}}",
+          "legendFormat": "RX {{iface}}",
           "range": true,
           "refId": "A"
         },
@@ -1472,10 +1395,10 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "-irate(network_io_total{iface!=\"lo\",type=\"outputBytes\"}[$__range])/1024",
+          "expr": "-irate(network_io_total{instance=\"$instance\", iface!=\"lo\", type=\"outputBytes\"}[$__rate_interval])/1024",
           "hide": false,
           "instant": false,
-          "legendFormat": "sent {{iface}}",
+          "legendFormat": "TX {{iface}}",
           "range": true,
           "refId": "B"
         }
@@ -1533,7 +1456,7 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -1541,9 +1464,9 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "irate(network_io_total{iface=\"wlan0\",type=\"inputBytes\"}[$__rate_interval])/1024/1024*8",
+          "expr": "irate(network_io_total{instance=\"$instance\", iface=~\"^e.+\", type=\"inputBytes\"}[$__rate_interval])/1024/1024*8",
           "instant": false,
-          "legendFormat": "recv {{iface}} (mb/s)",
+          "legendFormat": "RX {{iface}} (mb/s)",
           "range": true,
           "refId": "A"
         },
@@ -1553,10 +1476,10 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "irate(network_io_total{iface=\"wlan0\",type=\"outputBytes\"}[$__range])/1024/1024*8",
+          "expr": "irate(network_io_total{instance=\"$instance\", iface=~\"^e.+\", type=\"outputBytes\"}[$__rate_interval])/1024/1024*8",
           "hide": false,
           "instant": false,
-          "legendFormat": "sent {{iface}} (mb/s)",
+          "legendFormat": "TX {{iface}} (mb/s)",
           "range": true,
           "refId": "B"
         }
@@ -1665,7 +1588,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "node_disk_read_bytes",
+          "expr": "node_disk_read_bytes{instance=\"$instance\"}",
           "instant": false,
           "legendFormat": "READ {{dev}}",
           "range": true,
@@ -1677,7 +1600,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "- node_disk_written_bytes",
+          "expr": "- node_disk_written_bytes{instance=\"$instance\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "WRITE {{dev}}",
@@ -1746,7 +1669,7 @@
           "valueSize": 30
         }
       },
-      "pluginVersion": "10.1.2",
+      "pluginVersion": "10.1.5",
       "targets": [
         {
           "datasource": {
@@ -1754,7 +1677,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "node_filesystem_free{device=~\"^.+dev.+$\", type=\"percentage\"}*100",
+          "expr": "node_filesystem_free{instance=\"$instance\", device=~\"^.+dev.+$\", type=\"percentage\"}*100",
           "instant": false,
           "legendFormat": "{{device}}",
           "range": true,
@@ -1850,9 +1773,9 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "node_filesystem_free{device=~\"^.+dev.+$\", type=\"percentage\"} * 100",
+          "expr": "node_filesystem_free{instance=\"$instance\", device=~\"^.+dev.+$\", type=\"percentage\"} * 100",
           "instant": false,
-          "legendFormat": "{{device}} // {{fstype}} // {{mountpoint}} ",
+          "legendFormat": "{{device}} as {{fstype}} on {{mountpoint}} ",
           "range": true,
           "refId": "A"
         }
@@ -1947,7 +1870,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "node_disk_read_time",
+          "expr": "node_disk_read_time{instance=\"$instance\"}",
           "instant": false,
           "legendFormat": "READ {{dev}}",
           "range": true,
@@ -1959,7 +1882,7 @@
             "uid": "${DS_PROMETHEUS-LOCAL}"
           },
           "editorMode": "code",
-          "expr": "- node_disk_write_time",
+          "expr": "- node_disk_write_time{instance=\"$instance\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "WRITE {{dev}}",
@@ -1971,12 +1894,33 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "3s",
+  "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "hide": 2,
+        "label": "",
+        "name": "instance",
+        "query": "${VAR_INSTANCE}",
+        "skipUrlSync": false,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_INSTANCE}",
+          "text": "${VAR_INSTANCE}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_INSTANCE}",
+            "text": "${VAR_INSTANCE}",
+            "selected": false
+          }
+        ]
+      }
+    ]
   },
   "time": {
     "from": "now-2m",
@@ -2003,7 +1947,6 @@
   },
   "timezone": "",
   "title": "My dashboard",
-  "uid": "d76a3255-29c0-49e3-bf07-4b1c32d05036",
   "version": 42,
   "weekStart": ""
 }
