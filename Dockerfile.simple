@@ -1,0 +1,23 @@
+# expected result size is about 270Mb
+
+FROM node:bookworm-slim
+
+RUN apt-get update && apt-get -y install sysstat iproute2 --no-install-recommends
+
+RUN rm -rf /var/cache/apt/archives /var/lib/apt/lists
+
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+
+WORKDIR /home/node/app
+
+COPY package.json ./
+
+USER node
+
+RUN npm install
+
+COPY --chown=node:node . .
+
+EXPOSE 9200
+
+CMD [ "node", "index.js" ]

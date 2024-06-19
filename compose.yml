@@ -1,0 +1,11 @@
+services:
+  nodexporter:
+    build: .
+    image: clackx/mynodexporter
+    container_name: mynodexporter
+    environment:
+      - NODEXPORTER_PORT=${NODEXPORTER_PORT}
+      - NODEXPORTER_HOST=${NODEXPORTER_HOST}
+      - NODEXPORTER_UPD_INTERVAL=${NODEXPORTER_UPD_INTERVAL}
+    ports:
+      - 9200:9200

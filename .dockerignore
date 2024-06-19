@@ -1,0 +1,4 @@
+Dockerfile*
+compose*
+grafana/
+node_modules/
