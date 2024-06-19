@@ -17,7 +17,7 @@ const DiskFree = require('./utils/diskfree')
 const diskFree = new DiskFree()
 
 
-function systemMetrics(registry) {
+function systemMetrics(registry, updateInterval) {
   // const gauge_in = new client.Gauge({
   //   name: 'network_receive_bytes',
   //   help: 'network receive bytes by second per interface',
@@ -75,8 +75,8 @@ function systemMetrics(registry) {
   })
 
 
-  const node_cpu_ticks = new client.Gauge({
-    name: 'node_cpu_ticks',
+  const node_cpu_ticks_count = new client.Gauge({
+    name: 'node_cpu_ticks_count',
     help: 'CPU time usage',
     registers: [registry],
     labelNames: ['cpu', 'type'],
@@ -143,18 +143,18 @@ function systemMetrics(registry) {
     for (var [i, cpu] of os.cpus().entries())
       for (var type in cpu.times) {
         const cpu_index = i.toString().padStart(2, '0')
-        node_cpu_ticks.set({ cpu: cpu_index, type }, cpu.times[type])
+        node_cpu_ticks_count.set({ cpu: cpu_index, type }, cpu.times[type])
       }
 
     // console.timeEnd('all')
 
   }
 
-  setInterval(() => { getStats(); }, 1000)
+  setInterval(() => { getStats(); }, updateInterval)
 
 }
 
 
-module.exports = (registry) => {
-  systemMetrics(registry)
+module.exports = (registry, updateInterval) => {
+  systemMetrics(registry, updateInterval)
 }
