@@ -2,10 +2,58 @@ services:
   nodexporter:
     build: .
     image: clackx/mynodexporter
-    container_name: mynodexporter
+    container_name: moni_exporter
     environment:
-      - NODEXPORTER_PORT=${NODEXPORTER_PORT}
-      - NODEXPORTER_HOST=${NODEXPORTER_HOST}
       - NODEXPORTER_UPD_INTERVAL=${NODEXPORTER_UPD_INTERVAL}
+    expose:
+      - 9200
+    volumes:
+      - /proc:/proc
+    networks:
+      - monitor-net
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: moni_prometheus
+    user: "65534:65534"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    expose:
+      - 9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - ./prometheus/data:/prometheus
+    networks:
+      - monitor-net
+    depends_on:
+      - nodexporter
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: moni_grafana
     ports:
-      - 9200:9200
+      - 3000:3000
+    restart: unless-stopped
+    user: "65534:65534"
+    environment:
+      - GF_SERVER_DOMAIN=${GRAFANA_URL}
+      - GF_SERVER_ROOT_URL=https://${GRAFANA_URL}/
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - monitor-net
+    depends_on:
+      - prometheus
+
+
+networks:
+  monitor-net:
